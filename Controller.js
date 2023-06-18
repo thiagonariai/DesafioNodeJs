@@ -66,6 +66,22 @@ app.put('/atualizacliente/:id', async(req, res)=>{
     });
 });
 
+//obter Cliente
+app.get('/cliente/:id', async(req, res) =>{  
+    cliente.findByPk(req.params.id)
+    .then(cliente =>{
+      return res.json({
+        error: false,
+        cliente
+      });
+    }).catch(function(erro){
+      return res.status(400).json({
+        error: true,
+        message: "Erro: não foi possível acessar a API!"
+      });
+    });
+  });
+
 //Excluir Cliente
 app.delete('/exlcuircliente/:id', async(req, res)=>{
     
@@ -141,6 +157,22 @@ app.put('/atualizaempresa/:id', async(req, res)=>{
     });
 });
 
+//obter Empresa
+app.get('/empresa/:id', async(req, res) =>{  
+    empresa.findByPk(req.params.id)
+    .then(empresa =>{
+      return res.json({
+        error: false,
+        empresa
+      });
+    }).catch(function(erro){
+      return res.status(400).json({
+        error: true,
+        message: "Erro: não foi possível acessar a API!"
+      });
+    });
+  });
+
 //Excluir Empresa
 app.delete('/exlcuirempresa/:id', async(req, res)=>{
      if(!await empresa.findByPk(req.params.id)){
@@ -214,6 +246,22 @@ app.put('/atualizacartao/:id', async(req, res)=>{
         });  
     });
 });
+
+//obter Cartão
+app.get('/cartao/:id', async(req, res) =>{  
+    cartao.findByPk(req.params.id)
+    .then(cartao =>{
+      return res.json({
+        error: false,
+        cartao
+      });
+    }).catch(function(erro){
+      return res.status(400).json({
+        error: true,
+        message: "Erro: não foi possível acessar a API!"
+      });
+    });
+  });
 
 //Excluir Cartão
 app.delete('/exlcuircartao/:id', async(req, res)=>{
@@ -289,6 +337,22 @@ app.put('/atualizapromocao/:id', async(req, res)=>{
     });
 });
 
+//obter Promocao
+app.get('/promocao/:id', async(req, res) =>{  
+    promocao.findByPk(req.params.id)
+    .then(promocao =>{
+      return res.json({
+        error: false,
+        promocao
+      });
+    }).catch(function(erro){
+      return res.status(400).json({
+        error: true,
+        message: "Erro: não foi possível acessar a API!"
+      });
+    });
+  });
+
 //Excluir Promoção
 app.delete('/exlcuirpromocao/:id', async(req, res)=>{
      if(!await promocao.findByPk(req.params.id)){
@@ -340,20 +404,21 @@ app.get('/listacompras', async(req, res)=>{
 });
 
 //Atualizar Compra
-app.put('/atualizacompra/:id', async(req, res)=>{
+app.put('/atualizacompra/:CartaoId/:PromocaoId', async(req, res)=>{
     const comp = {
+        data: req.body.data,
         quantidade: req.body.quantidade,
         valor: req.body.valor
     }
 
-    if(!await cartao.findByPk(req.params.id)){
+    if(!await cartao.findByPk(req.params.CartaoId)){
         return res.status(400).json({
             error: true,
             message: 'Cartão não encontrado.'
         });
     };
 
-    if(!await promocao.findByPk(req.body.PromocaoId)){
+    if(!await promocao.findByPk(req.params.PromocaoId)){
         return res.status(400).json({
             error: true,
             message: 'Promoção não encontrada.'
@@ -361,8 +426,8 @@ app.put('/atualizacompra/:id', async(req, res)=>{
     };
 
     await compra.update(comp, {
-        where: Sequelize.and({PromocaoId: req.body.PromocaoId},
-            {CartaoId: req.params.id})
+        where: Sequelize.and({CartaoId: req.params.CartaoId},
+            {PromocaoId: req.params.PromocaoId})
     }).then(function(){
         return res.json({
             error: false,
@@ -376,17 +441,36 @@ app.put('/atualizacompra/:id', async(req, res)=>{
     });
 });
 
+//obter Compra
+app.get('/compra/:CartaoId/:PromocaoId', async(req, res) =>{  
+    compra.findOne({
+        where: Sequelize.and({CartaoId: req.params.CartaoId},
+            {PromocaoId: req.params.PromocaoId})
+    })
+    .then(compra =>{
+      return res.json({
+        error: false,
+        compra
+      });
+    }).catch(function(erro){
+      return res.status(400).json({
+        error: true,
+        message: "Erro: não foi possível acessar a API!"
+      });
+    });
+  });
+
 //Excluir Compra
-app.delete('/exlcuircompra/:id', async(req, res)=>{
+app.delete('/excluircompra/:CartaoId/:PromocaoId', async(req, res)=>{
    
-    if(!await cartao.findByPk(req.params.id)){
+    if(!await cartao.findByPk(req.params.CartaoId)){
         return res.status(400).json({
             error: true,
             message: 'Cartão não encontrada.'
         });
     };
 
-    if(!await promocao.findByPk(req.body.PromocaoId)){
+    if(!await promocao.findByPk(req.params.PromocaoId)){
         return res.status(400).json({
             error: true,
             message: 'Promoção não encontrada.'
@@ -394,8 +478,8 @@ app.delete('/exlcuircompra/:id', async(req, res)=>{
     };
 
     await compra.destroy({
-        where: Sequelize.and({PromocaoId: req.body.PromocaoId},
-            {CartaoId: req.params.id})
+        where: Sequelize.and({CartaoId: req.params.CartaoId},
+            {PromocaoId: req.params.PromocaoId})
     }).then(function(){
         return res.json({
             error: false,
